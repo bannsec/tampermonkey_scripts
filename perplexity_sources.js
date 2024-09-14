@@ -1,15 +1,20 @@
-/* ==UserScript==
- * @name         Perplexity Source Extractor and Text Downloader (Auto)
- * @namespace    http://tampermonkey.net/
- * @version      1.1
- * @description  Extracts and downloads text content from unique source links in Perplexity prompts.
- * @author       Your Name
- * @match        https://www.perplexity.ai/*
- * @grant        GM_xmlhttpRequest
- * @grant        GM_download
- * @grant        GM_notification
- * @require      https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js
- * ==/UserScript== */
+// ==UserScript==
+// @name         Perplexity Source Extractor and Text Downloader (Auto)
+// @namespace    http://tampermonkey.net/
+// @version      1.1
+// @description  Extracts and downloads text content from unique source links in Perplexity prompts.
+// @author       Your Name
+// @match        https://www.perplexity.ai/*
+// @grant        GM_xmlhttpRequest
+// @grant        GM_download
+// @grant        GM_notification
+// @require      https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js
+// @license      MIT
+// @homepageURL  https://github.com/bannsec/tampermonkey_scripts
+// @supportURL   https://github.com/bannsec/tampermonkey_scripts/issues
+// @updateURL    https://github.com/bannsec/tampermonkey_scripts/raw/main/perplexity_sources.js
+// @downloadURL  https://github.com/bannsec/tampermonkey_scripts/raw/main/perplexity_sources.js
+// ==/UserScript==
 
 (function() {
     'use strict';
