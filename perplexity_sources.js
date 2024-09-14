@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.7
+// @version      1.8
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -145,6 +145,7 @@
 
     // Function to download source content
     const downloadSources = (sources) => {
+        console.log('downloadSources function called');
         let combinedText = '';
         let downloadedCount = 0;
 
@@ -157,6 +158,7 @@
                         "Origin": source.url
                     },
                     onload: function(response) {
+                        console.log('GM_xmlhttpRequest onload callback triggered');
                         const textContent = extractTextFromHTML(response.responseText);
                         combinedText += `\n\n--- Source ${source.number} ---\n\n${textContent}`;
                         downloadedCount++;
@@ -169,6 +171,7 @@
                                 name: 'Combined_Sources.txt',
                                 saveAs: false,
                                 onload: function() {
+                                    console.log('GM_download onload callback triggered');
                                     URL.revokeObjectURL(url);
                                     GM_notification({
                                         text: `All ${sources.length} sources have been downloaded as a single text file.`,
@@ -225,6 +228,7 @@
     });
 
     downloadButton.addEventListener('click', function() {
+        console.log('Download button clicked');
         const sources = extractSources();
         downloadSources(sources);
     });
