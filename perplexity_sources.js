@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -15,6 +15,7 @@
 // @supportURL   https://github.com/bannsec/tampermonkey_scripts/issues
 // @updateURL    https://github.com/bannsec/tampermonkey_scripts/raw/main/perplexity_sources.js
 // @downloadURL  https://github.com/bannsec/tampermonkey_scripts/raw/main/perplexity_sources.js
+// @connect      *
 // ==/UserScript==
 
 (function() {
@@ -89,6 +90,9 @@
                 GM_xmlhttpRequest({
                     method: "GET",
                     url: source.url,
+                    headers: {
+                        "Origin": source.url
+                    },
                     onload: function(response) {
                         const textContent = extractTextFromHTML(response.responseText);
                         combinedText += `\n\n--- Source ${source.number} ---\n\n${textContent}`;
@@ -116,6 +120,20 @@
                         GM_notification({
                             text: `Error downloading source ${source.number}: ${error.message}`,
                             title: 'Download Error',
+                            timeout: 5000
+                        });
+                    },
+                    onabort: function() {
+                        GM_notification({
+                            text: `Download aborted for source ${source.number}.`,
+                            title: 'Download Aborted',
+                            timeout: 5000
+                        });
+                    },
+                    ontimeout: function() {
+                        GM_notification({
+                            text: `Download timed out for source ${source.number}.`,
+                            title: 'Download Timeout',
                             timeout: 5000
                         });
                     }
