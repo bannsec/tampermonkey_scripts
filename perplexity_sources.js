@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.8
+// @version      1.9
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -10,6 +10,7 @@
 // @grant        GM_download
 // @grant        GM_notification
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js
+// @require      https://unpkg.com/@mozilla/readability@0.5.0/Readability.js
 // @license      MIT
 // @homepageURL  https://github.com/bannsec/tampermonkey_scripts
 // @supportURL   https://github.com/bannsec/tampermonkey_scripts/issues
@@ -140,7 +141,9 @@
     // Function to extract text content from HTML
     const extractTextFromHTML = (html) => {
         const doc = new DOMParser().parseFromString(html, 'text/html');
-        return doc.body.innerText || '';
+        const documentClone = doc.cloneNode(true);
+        const article = new Readability(documentClone).parse();
+        return article.textContent || '';
     };
 
     // Function to download source content
