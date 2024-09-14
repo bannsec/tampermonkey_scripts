@@ -1,13 +1,14 @@
 /* ==UserScript==
  * @name         Perplexity Source Extractor and Text Downloader (Auto)
  * @namespace    http://tampermonkey.net/
- * @version      1.0
+ * @version      1.1
  * @description  Extracts and downloads text content from unique source links in Perplexity prompts.
  * @author       Your Name
  * @match        https://www.perplexity.ai/*
  * @grant        GM_xmlhttpRequest
  * @grant        GM_download
  * @grant        GM_notification
+ * @require      https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js
  * ==/UserScript== */
 
 (function() {
