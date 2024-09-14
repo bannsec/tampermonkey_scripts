@@ -1,8 +1,8 @@
-
+ 
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.5
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -81,14 +81,15 @@
         modal.style.backgroundColor = 'rgba(0,0,0,0.4)';
 
         // Set modal content styles
-        modalContent.style.backgroundColor = '#fefefe';
+        modalContent.style.backgroundColor = '#333'; // Darker background color for better contrast
+        modalContent.style.color = '#f1f1f1'; // Lighter text color for better readability
         modalContent.style.margin = '15% auto';
         modalContent.style.padding = '20px';
         modalContent.style.border = '1px solid #888';
         modalContent.style.width = '80%';
 
         // Set close button styles
-        closeButton.style.color = '#aaa';
+        closeButton.style.color = '#f1f1f1'; // Updated close button color to maintain contrast
         closeButton.style.float = 'right';
         closeButton.style.fontSize = '28px';
         closeButton.style.fontWeight = 'bold';
