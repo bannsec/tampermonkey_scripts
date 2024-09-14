@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -61,17 +61,79 @@
         return sources;
     };
 
+    // Function to create and display the modal
+    const createModal = (sources) => {
+        // Create modal elements
+        const modal = document.createElement('div');
+        const modalContent = document.createElement('div');
+        const closeButton = document.createElement('span');
+        const sourceList = document.createElement('ul');
+
+        // Set modal styles
+        modal.style.display = 'block';
+        modal.style.position = 'fixed';
+        modal.style.zIndex = '10000';
+        modal.style.left = '0';
+        modal.style.top = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.overflow = 'auto';
+        modal.style.backgroundColor = 'rgba(0,0,0,0.4)';
+
+        // Set modal content styles
+        modalContent.style.backgroundColor = '#fefefe';
+        modalContent.style.margin = '15% auto';
+        modalContent.style.padding = '20px';
+        modalContent.style.border = '1px solid #888';
+        modalContent.style.width = '80%';
+
+        // Set close button styles
+        closeButton.style.color = '#aaa';
+        closeButton.style.float = 'right';
+        closeButton.style.fontSize = '28px';
+        closeButton.style.fontWeight = 'bold';
+        closeButton.innerHTML = '&times;';
+
+        // Add close button event listener
+        closeButton.onclick = () => {
+            modal.style.display = 'none';
+        };
+
+        // Add sources to the list
+        sources.forEach(source => {
+            const listItem = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = source.url;
+            link.innerText = `[${source.number}] ${source.url}`;
+            link.style.cursor = 'pointer';
+            link.onclick = (e) => {
+                e.preventDefault();
+                navigator.clipboard.writeText(source.url).then(() => {
+                    alert('URL copied to clipboard');
+                });
+            };
+            listItem.appendChild(link);
+            sourceList.appendChild(listItem);
+        });
+
+        // Append elements to modal content
+        modalContent.appendChild(closeButton);
+        modalContent.appendChild(sourceList);
+
+        // Append modal content to modal
+        modal.appendChild(modalContent);
+
+        // Append modal to body
+        document.body.appendChild(modal);
+    };
+
     // Function to display sources
     const displaySources = (sources) => {
-        let message = 'Unique Sources:\n\n';
         if (sources.length > 0) {
-            sources.forEach(source => {
-                message += `[${source.number}] ${source.url}\n`;
-            });
+            createModal(sources);
         } else {
-            message = 'No sources found.';
+            alert('No sources found.');
         }
-        alert(message);
     };
 
     // Function to extract text content from HTML
