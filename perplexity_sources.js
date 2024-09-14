@@ -1,13 +1,14 @@
-// ==UserScript==
-// @name         Perplexity Source Extractor and Text Downloader (Auto)
-// @namespace    http://tampermonkey.net/
-// @version      0.8
-// @description  Extracts, displays, and automatically downloads plain text content from unique source links in Perplexity prompts
-// @match        https://www.perplexity.ai/*
-// @grant        GM_xmlhttpRequest
-// @grant        GM_download
-// @grant        GM_notification
-// ==/UserScript==
+/* ==UserScript==
+ * @name         Perplexity Source Extractor and Text Downloader (Auto)
+ * @namespace    http://tampermonkey.net/
+ * @version      1.0
+ * @description  Extracts and downloads text content from unique source links in Perplexity prompts.
+ * @author       Your Name
+ * @match        https://www.perplexity.ai/*
+ * @grant        GM_xmlhttpRequest
+ * @grant        GM_download
+ * @grant        GM_notification
+ * ==/UserScript== */
 
 (function() {
     'use strict';
@@ -38,12 +39,16 @@
         const uniqueUrls = new Set();
         const sourceElements = document.querySelectorAll('div[class^="prose"] a[target="_blank"]');
         
-        sourceElements.forEach((link, index) => {
-            if (link.href && !link.href.includes('javascript:') && !uniqueUrls.has(link.href)) {
-                uniqueUrls.add(link.href);
-                sources.push({ number: index + 1, url: link.href });
-            }
-        });
+        try {
+            sourceElements.forEach((link, index) => {
+                if (link.href && !link.href.includes('javascript:') && !uniqueUrls.has(link.href)) {
+                    uniqueUrls.add(link.href);
+                    sources.push({ number: index + 1, url: link.href });
+                }
+            });
+        } catch (error) {
+            alert('Error extracting sources: ' + error.message);
+        }
 
         return sources;
     };
@@ -72,32 +77,47 @@
         let downloadedCount = 0;
         sources.forEach((source, index) => {
             setTimeout(() => {
-                GM_xmlhttpRequest({
-                    method: "GET",
-                    url: source.url,
-                    onload: function(response) {
-                        const textContent = extractTextFromHTML(response.responseText);
-                        const blob = new Blob([textContent], {type: 'text/plain'});
-                        const url = URL.createObjectURL(blob);
-                        
-                        GM_download({
-                            url: url,
-                            name: `Source_${source.number}.txt`,
-                            saveAs: false,
-                            onload: function() {
-                                URL.revokeObjectURL(url);
-                                downloadedCount++;
-                                if (downloadedCount === sources.length) {
-                                    GM_notification({
-                                        text: `All ${sources.length} sources have been downloaded as text.`,
-                                        title: 'Download Complete',
-                                        timeout: 5000
-                                    });
+                try {
+                    GM_xmlhttpRequest({
+                        method: "GET",
+                        url: source.url,
+                        onload: function(response) {
+                            const textContent = extractTextFromHTML(response.responseText);
+                            const blob = new Blob([textContent], {type: 'text/plain'});
+                            const url = URL.createObjectURL(blob);
+                            
+                            GM_download({
+                                url: url,
+                                name: `Source_${source.number}.txt`,
+                                saveAs: false,
+                                onload: function() {
+                                    URL.revokeObjectURL(url);
+                                    downloadedCount++;
+                                    if (downloadedCount === sources.length) {
+                                        GM_notification({
+                                            text: `All ${sources.length} sources have been downloaded as text.`,
+                                            title: 'Download Complete',
+                                            timeout: 5000
+                                        });
+                                    }
                                 }
-                            }
-                        });
-                    }
-                });
+                            });
+                        },
+                        onerror: function(error) {
+                            GM_notification({
+                                text: `Error downloading source ${source.number}: ${error.message}`,
+                                title: 'Download Error',
+                                timeout: 5000
+                            });
+                        }
+                    });
+                } catch (error) {
+                    GM_notification({
+                        text: `Error initiating download for source ${source.number}: ${error.message}`,
+                        title: 'Download Error',
+                        timeout: 5000
+                    });
+                }
             }, index * 1000); // Delay each download by 1 second to avoid overwhelming the browser
         });
     };
