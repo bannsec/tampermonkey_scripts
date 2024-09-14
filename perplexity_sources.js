@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -55,7 +55,7 @@
                 }
             });
         } catch (error) {
-            alert('Error extracting sources: ' + error.message);
+            showToast('Error extracting sources: ' + error.message);
         }
 
         return sources;
@@ -110,7 +110,7 @@
             link.onclick = (e) => {
                 e.preventDefault();
                 navigator.clipboard.writeText(source.url).then(() => {
-                    alert('URL copied to clipboard');
+                    showToast('URL copied to clipboard');
                 });
             };
             listItem.appendChild(link);
@@ -133,7 +133,7 @@
         if (sources.length > 0) {
             createModal(sources);
         } else {
-            alert('No sources found.');
+            showToast('No sources found.');
         }
     };
 
@@ -238,4 +238,41 @@
     // Use MutationObserver to ensure the buttons are always present
     const observer = new MutationObserver(addButtons);
     observer.observe(document.body, { childList: true, subtree: true });
+
+    // Function to create and display a toast notification
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.innerText = message;
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.backgroundColor = '#333';
+        toast.style.color = '#fff';
+        toast.style.padding = '10px 20px';
+        toast.style.borderRadius = '5px';
+        toast.style.zIndex = '10000';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    // Add CSS styles for the toast notification
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 10000;
+        }
+    `;
+    document.head.appendChild(style);
 })();
