@@ -1,7 +1,8 @@
+
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -80,51 +81,52 @@
 
     // Function to download source content
     const downloadSources = (sources) => {
+        let combinedText = '';
         let downloadedCount = 0;
+
         sources.forEach((source, index) => {
-            setTimeout(() => {
-                try {
-                    GM_xmlhttpRequest({
-                        method: "GET",
-                        url: source.url,
-                        onload: function(response) {
-                            const textContent = extractTextFromHTML(response.responseText);
-                            const blob = new Blob([textContent], {type: 'text/plain'});
+            try {
+                GM_xmlhttpRequest({
+                    method: "GET",
+                    url: source.url,
+                    onload: function(response) {
+                        const textContent = extractTextFromHTML(response.responseText);
+                        combinedText += `\n\n--- Source ${source.number} ---\n\n${textContent}`;
+                        downloadedCount++;
+                        if (downloadedCount === sources.length) {
+                            const blob = new Blob([combinedText], {type: 'text/plain'});
                             const url = URL.createObjectURL(blob);
                             
                             GM_download({
                                 url: url,
-                                name: `Source_${source.number}.txt`,
+                                name: 'Combined_Sources.txt',
                                 saveAs: false,
                                 onload: function() {
                                     URL.revokeObjectURL(url);
-                                    downloadedCount++;
-                                    if (downloadedCount === sources.length) {
-                                        GM_notification({
-                                            text: `All ${sources.length} sources have been downloaded as text.`,
-                                            title: 'Download Complete',
-                                            timeout: 5000
-                                        });
-                                    }
+                                    GM_notification({
+                                        text: `All ${sources.length} sources have been downloaded as a single text file.`,
+                                        title: 'Download Complete',
+                                        timeout: 5000
+                                    });
                                 }
                             });
-                        },
-                        onerror: function(error) {
-                            GM_notification({
-                                text: `Error downloading source ${source.number}: ${error.message}`,
-                                title: 'Download Error',
-                                timeout: 5000
-                            });
                         }
-                    });
-                } catch (error) {
-                    GM_notification({
-                        text: `Error initiating download for source ${source.number}: ${error.message}`,
-                        title: 'Download Error',
-                        timeout: 5000
-                    });
-                }
-            }, index * 1000); // Delay each download by 1 second to avoid overwhelming the browser
+                    },
+                    onerror: function(error) {
+                        GM_notification({
+                            text: `Error downloading source ${source.number}: ${error.message}`,
+                            title: 'Download Error',
+                            timeout: 5000
+                        });
+                    }
+                });
+            } catch (error) {
+                GM_notification({
+                    text: `Error initiating download for source ${source.number}: ${error.message}`,
+                    title: 'Download Error',
+                    timeout: 5000
+                });
+            }
         });
     };
 
