@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.6
+// @version      1.7
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -173,6 +173,13 @@
                                     GM_notification({
                                         text: `All ${sources.length} sources have been downloaded as a single text file.`,
                                         title: 'Download Complete',
+                                        timeout: 5000
+                                    });
+                                },
+                                onerror: function(error) {
+                                    GM_notification({
+                                        text: `Error downloading combined sources: ${error.message}`,
+                                        title: 'Download Error',
                                         timeout: 5000
                                     });
                                 }
