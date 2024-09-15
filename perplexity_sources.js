@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.11
+// @version      1.12
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts. Adds a button to copy the output to the clipboard instead of downloading.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -46,7 +46,7 @@
 
     // Function to extract relevant sources with deduplication
     const extractSources = () => {
-        alert('Extracting sources');
+        showToast('Extracting sources');
         const sources = [];
         const uniqueUrls = new Set();
         const sourceElements = document.querySelectorAll('div[class^="prose"] a[target="_blank"]');
@@ -62,7 +62,7 @@
             showToast('Error extracting sources: ' + error.message);
         }
 
-        alert('Sources extracted');
+        showToast('Sources extracted');
         return sources;
     };
 
@@ -152,7 +152,7 @@
 
     // Function to download source content
     const downloadSources = (sources) => {
-        alert('Downloading sources');
+        showToast('Downloading sources');
         console.log('downloadSources function called');
         let combinedText = '';
         let downloadedCount = 0;
@@ -166,7 +166,7 @@
                         "Origin": source.url
                     },
                     onload: function(response) {
-                        alert('Source downloaded');
+                        showToast('Source downloaded');
                         console.log('GM_xmlhttpRequest onload callback triggered');
                         const textContent = extractTextFromHTML(response.responseText);
                         combinedText += `\n\n--- Source ${source.number} ---\n\n${textContent}`;
@@ -297,7 +297,7 @@
     });
 
     downloadButton.addEventListener('click', function() {
-        alert('Download button clicked');
+        showToast('Download button clicked');
         console.log('Download button clicked');
         const sources = extractSources();
         downloadSources(sources);
