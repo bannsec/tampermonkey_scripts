@@ -2,13 +2,14 @@
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.9
-// @description  Extracts and downloads text content from unique source links in Perplexity prompts.
+// @version      1.10
+// @description  Extracts and downloads text content from unique source links in Perplexity prompts. Adds a button to copy the output to the clipboard instead of downloading.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_download
 // @grant        GM_notification
+// @grant        GM_setClipboard
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js
 // @require      https://unpkg.com/@mozilla/readability@0.5.0/Readability.js
 // @license      MIT
@@ -25,6 +26,7 @@
     // Create the buttons
     const showButton = createButton('Show Sources', '120px');
     const downloadButton = createButton('Download Text', '10px');
+    const copyButton = createButton('Copy to Clipboard', '240px');
 
     function createButton(text, right) {
         const button = document.createElement('button');
@@ -224,6 +226,66 @@
         });
     };
 
+    // Function to copy source content to clipboard
+    const copySourcesToClipboard = (sources) => {
+        console.log('copySourcesToClipboard function called');
+        let combinedText = '';
+        let copiedCount = 0;
+
+        sources.forEach((source, index) => {
+            try {
+                GM_xmlhttpRequest({
+                    method: "GET",
+                    url: source.url,
+                    headers: {
+                        "Origin": source.url
+                    },
+                    onload: function(response) {
+                        console.log('GM_xmlhttpRequest onload callback triggered');
+                        const textContent = extractTextFromHTML(response.responseText);
+                        combinedText += `\n\n--- Source ${source.number} ---\n\n${textContent}`;
+                        copiedCount++;
+                        if (copiedCount === sources.length) {
+                            GM_setClipboard(combinedText);
+                            GM_notification({
+                                text: `All ${sources.length} sources have been copied to the clipboard.`,
+                                title: 'Copy Complete',
+                                timeout: 5000
+                            });
+                        }
+                    },
+                    onerror: function(error) {
+                        GM_notification({
+                            text: `Error copying source ${source.number}: ${error.message}`,
+                            title: 'Copy Error',
+                            timeout: 5000
+                        });
+                    },
+                    onabort: function() {
+                        GM_notification({
+                            text: `Copy aborted for source ${source.number}.`,
+                            title: 'Copy Aborted',
+                            timeout: 5000
+                        });
+                    },
+                    ontimeout: function() {
+                        GM_notification({
+                            text: `Copy timed out for source ${source.number}.`,
+                            title: 'Copy Timeout',
+                            timeout: 5000
+                        });
+                    }
+                });
+            } catch (error) {
+                GM_notification({
+                    text: `Error initiating copy for source ${source.number}: ${error.message}`,
+                    title: 'Copy Error',
+                    timeout: 5000
+                });
+            }
+        });
+    };
+
     // Add click event listeners
     showButton.addEventListener('click', function() {
         const sources = extractSources();
@@ -236,6 +298,12 @@
         downloadSources(sources);
     });
 
+    copyButton.addEventListener('click', function() {
+        console.log('Copy button clicked');
+        const sources = extractSources();
+        copySourcesToClipboard(sources);
+    });
+
     // Function to add the buttons to the page
     const addButtons = () => {
         if (!document.body.contains(showButton)) {
@@ -243,6 +311,9 @@
         }
         if (!document.body.contains(downloadButton)) {
             document.body.appendChild(downloadButton);
+        }
+        if (!document.body.contains(copyButton)) {
+            document.body.appendChild(copyButton);
         }
     };
 
