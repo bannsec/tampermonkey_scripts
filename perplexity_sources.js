@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.12
+// @version      1.13
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts. Adds a button to copy the output to the clipboard instead of downloading.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -157,6 +157,8 @@
         let combinedText = '';
         let downloadedCount = 0;
 
+        const isAndroid = /Android/i.test(navigator.userAgent);
+
         sources.forEach((source, index) => {
             try {
                 GM_xmlhttpRequest({
@@ -175,27 +177,42 @@
                             const blob = new Blob([combinedText], {type: 'text/plain'});
                             const url = URL.createObjectURL(blob);
                             
-                            GM_download({
-                                url: url,
-                                name: 'Combined_Sources.txt',
-                                saveAs: false,
-                                onload: function() {
-                                    console.log('GM_download onload callback triggered');
-                                    URL.revokeObjectURL(url);
-                                    GM_notification({
-                                        text: `All ${sources.length} sources have been downloaded as a single text file.`,
-                                        title: 'Download Complete',
-                                        timeout: 5000
-                                    });
-                                },
-                                onerror: function(error) {
-                                    GM_notification({
-                                        text: `Error downloading combined sources: ${error.message}`,
-                                        title: 'Download Error',
-                                        timeout: 5000
-                                    });
-                                }
-                            });
+                            if (isAndroid) {
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'Combined_Sources.txt';
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(url);
+                                GM_notification({
+                                    text: `All ${sources.length} sources have been downloaded as a single text file.`,
+                                    title: 'Download Complete',
+                                    timeout: 5000
+                                });
+                            } else {
+                                GM_download({
+                                    url: url,
+                                    name: 'Combined_Sources.txt',
+                                    saveAs: false,
+                                    onload: function() {
+                                        console.log('GM_download onload callback triggered');
+                                        URL.revokeObjectURL(url);
+                                        GM_notification({
+                                            text: `All ${sources.length} sources have been downloaded as a single text file.`,
+                                            title: 'Download Complete',
+                                            timeout: 5000
+                                        });
+                                    },
+                                    onerror: function(error) {
+                                        GM_notification({
+                                            text: `Error downloading combined sources: ${error.message}`,
+                                            title: 'Download Error',
+                                            timeout: 5000
+                                        });
+                                    }
+                                });
+                            }
                         }
                     },
                     onerror: function(error) {
