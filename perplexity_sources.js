@@ -1,8 +1,8 @@
- 
+  
 // ==UserScript==
 // @name         Perplexity Source Extractor and Text Downloader (Auto)
 // @namespace    http://tampermonkey.net/
-// @version      1.13
+// @version      1.14
 // @description  Extracts and downloads text content from unique source links in Perplexity prompts. Adds a button to copy the output to the clipboard instead of downloading.
 // @author       Your Name
 // @match        https://www.perplexity.ai/*
@@ -147,7 +147,7 @@
         const doc = new DOMParser().parseFromString(html, 'text/html');
         const documentClone = doc.cloneNode(true);
         const article = new Readability(documentClone).parse();
-        return article.textContent || '';
+        return article ? article.textContent || '' : '';
     };
 
     // Function to download source content
@@ -171,7 +171,9 @@
                         showToast('Source downloaded');
                         console.log('GM_xmlhttpRequest onload callback triggered');
                         const textContent = extractTextFromHTML(response.responseText);
-                        combinedText += `\n\n--- Source ${source.number} ---\n\n${textContent}`;
+                        if (textContent) {
+                            combinedText += `\n\n--- Source ${source.number} ---\n\n${textContent}`;
+                        }
                         downloadedCount++;
                         if (downloadedCount === sources.length) {
                             const blob = new Blob([combinedText], {type: 'text/plain'});
